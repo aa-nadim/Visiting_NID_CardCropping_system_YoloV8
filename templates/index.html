@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Cropping System</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <div class="main-content">
+        <br>
+        <br>
+        <h1>Visiting Card / ID Card Cropping System</h1>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <label for="file-upload" class="file-upload-label">
+                <input type="file" name="image" id="file-upload" class="file-upload-input" accept="image/*" required>
+                <span class="file-upload-icon">📤</span> Choose an image
+            </label>
+            <button id="predictBtn" type="submit">Predict</button>
+        </form>
+        <div id="result">
+            <div id="loading">
+                <div class="spinner"></div>
+                <p>Processing your image...</p>
+            </div>
+            <p id="message"></p>
+            <div class="image-container">
+                <div class="image-wrapper">
+                    <img id="uploadedImage" src="" alt="Uploaded Image">
+                    <div class="image-label" id="uploadedLabel">Uploaded Image</div>
+                </div>
+                <div class="image-wrapper">
+                    <img id="croppedImage" src="" alt="Cropped Image">
+                    <div class="image-label" id="croppedLabel">Output</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Minimal Footer -->
+    <footer class="minimal-footer">
+        <p>Developed by Nadim</p>
+    </footer>
+
+    <script>
+    document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+
+        // Show loading icon when form is submitted
+        document.getElementById('loading').style.display = 'block';
+
+        const fileInput = document.getElementById('file-upload');
+        const file = fileInput.files[0];
+        let uploadedImageSrc = '';
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                uploadedImageSrc = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+
+        try {
+            const response = await fetch('/detect-and-crop', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            document.getElementById('message').textContent = result.message;
+
+            // Show the image container
+            const imageContainer = document.querySelector('.image-container');
+            imageContainer.style.display = 'flex';
+
+            if (uploadedImageSrc) {
+                const uploadedImage = document.getElementById('uploadedImage');
+                const uploadedLabel = document.getElementById('uploadedLabel');
+                uploadedImage.src = uploadedImageSrc;
+                uploadedImage.style.display = 'block';
+                uploadedLabel.style.display = 'block';
+            }
+
+            if (result.output_filename) {
+                const imageUrl = `/output/${result.output_filename}?${Date.now()}`;
+                const croppedImage = document.getElementById('croppedImage');
+                const croppedLabel = document.getElementById('croppedLabel');
+                croppedImage.src = imageUrl;
+                croppedImage.style.display = 'block';
+                croppedLabel.style.display = 'block';
+            } else {
+                // Clear the src attribute when no output image available
+                const croppedImage = document.getElementById('croppedImage');
+                const croppedLabel = document.getElementById('croppedLabel');
+                croppedImage.src = '';
+                croppedImage.style.display = 'none';
+                croppedLabel.style.display = 'none';
+            }
+
+        } catch (error) {
+            document.getElementById('message').textContent = 'Error processing image: ' + error.message;
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>
