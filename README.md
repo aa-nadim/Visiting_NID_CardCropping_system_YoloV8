@@ -181,10 +181,6 @@ User Upload → Flask API → YOLO Detection → OpenCV Cropping → Result Disp
 
 ---
 
-## 🌐 Live Demo
-
-Experience the system live on Hugging Face Spaces:
-### [🚀 Live Demo on Hugging Face](https://huggingface.co/spaces/iluasdfiuasfd/Visiting-and-NID-Card-Cropping)
 
 ---
 
